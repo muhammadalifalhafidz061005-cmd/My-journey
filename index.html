@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GIN — My Journey</title>
+
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+<script>
+  (function () {
+    try {
+      var saved = localStorage.getItem('gin-theme');
+      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
+    } catch (e) {}
+  })();
+</script>
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  /* ============ THEME TOKENS ============ */
+  :root {
+    --bg: #f6f8fb;
+    --surface: #ffffff;
+    --surface-2: #f2f5f9;
+    --surface-3: #e6ebf2;
+    --border: #e3e8ef;
+    --border-2: #cbd5e1;
+    --text: #0b1220;
+    --muted: #64748b;
+    --muted-2: #94a3b8;
+
+    --accent: #0284c7;
+    --accent-soft: rgba(2, 132, 199, .09);
+    --accent-border: rgba(2, 132, 199, .28);
+
+    --pos: #059669;
+    --pos-soft: rgba(5, 150, 105, .09);
+    --pos-border: rgba(5, 150, 105, .25);
+
+    --neg: #dc2626;
+    --neg-soft: rgba(220, 38, 38, .09);
+    --neg-border: rgba(220, 38, 38, .25);
+
+    --grid: rgba(11, 18, 32, .05);
+    --shadow-sm: 0 1px 2px rgba(11, 18, 32, .04);
+    --shadow-md: 0 4px 14px -6px rgba(11, 18, 32, .14);
+    --shadow-lg: 0 24px 48px -28px rgba(11, 18, 32, .32);
+    color-scheme: light;
+  }
+
+  html[data-theme="dark"] {
+    --bg: #080c14;
+    --surface: #0e1420;
+    --surface-2: #131b2a;
+    --surface-3: #1b2536;
+    --border: #1a2333;
+    --border-2: #2a3648;
+    --text: #e6ecf5;
+    --muted: #7c8ba3;
+    --muted-2: #55647e;
+
+    --accent: #38bdf8;
+    --accent-soft: rgba(56, 189, 248, .10);
+    --accent-border: rgba(56, 189, 248, .28);
+
+    --pos: #34d399;
+    --pos-soft: rgba(52, 211, 153, .10);
+    --pos-border: rgba(52, 211, 153, .25);
+
+    --neg: #f87171;
+    --neg-soft: rgba(248, 113, 113, .10);
+    --neg-border: rgba(248, 113, 113, .25);
+
+    --grid: rgba(255, 255, 255, .045);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .35);
+    --shadow-md: 0 4px 16px -8px rgba(0, 0, 0, .6);
+    --shadow-lg: 0 24px 48px -26px rgba(0, 0, 0, .9);
+    color-scheme: dark;
+  }
+
+  /* ============ BASE ============ */
+  html, body { min-height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition: background-color .3s ease, color .3s ease;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-2);
+    border-radius: 999px;
+    border: 2px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted-2); }
+  ::selection { background: var(--accent); color: var(--bg); }
+
+  /* ============ LAYOUT ============ */
+  .app { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    width: 252px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.4rem .9rem;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    transition: background-color .3s ease, border-color .3s ease;
+    z-index: 40;
+  }
+
+  .main { flex: 1; min-width: 0; }
+
+  /* ============ BRAND ============ */
+  .brand { display: flex; align-items: center; gap: .7rem; padding: 0 .45rem; }
+
+  .brand-mark {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: grid; place-items: center;
+    color: var(--bg);
+    background: var(--accent);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .brand-mark svg { width: 19px; height: 19px; stroke-width: 2.2; }
+
+  /* Logo image di dalam brand-mark */
+  .brand-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    border-radius: inherit;
+  }
+
+  .brand-name {
+    font-size: .95rem;
+    font-weight: 800;
+    letter-spacing: .16em;
+    line-height: 1;
+    color: var(--text);
+  }
+  .brand-sub {
+    font-size: .62rem;
+    color: var(--muted);
+    letter-spacing: .18em;
+    font-weight: 600;
+    margin-top: 3px;
+  }
+
+  /* ============ NAV ============ */
+  .nav { display: flex; flex-direction: column; gap: .2rem; }
+
+  .nav-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    width: 100%;
+    padding: .68rem .85rem;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--muted);
+    font-size: .82rem;
+    font-weight: 600;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: color .18s, background-color .18s, border-color .18s;
+  }
+  .nav-item svg { width: 17px; height: 17px; flex-shrink: 0; stroke-width: 2; }
+  .nav-item:hover { color: var(--text); background: var(--surface-2); }
+
+  .nav-item.active {
+    color: var(--text);
+    background: var(--surface-2);
+    border-color: var(--border);
+  }
+  .nav-item.active svg { color: var(--accent); }
+
+  .nav-item .num {
+    margin-left: auto;
+    font-size: .62rem;
+    font-weight: 700;
+    color: var(--muted-2);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: .06em;
+  }
+  .nav-item.active .num { color: var(--accent); }
+
+  /* ============ SIDEBAR FOOTER ============ */
+  .sidebar-footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+    padding: .9rem .95rem;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+  .mini-stat {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    font-size: .68rem;
+    color: var(--muted);
+    letter-spacing: .02em;
+  }
+  .mini-stat strong {
+    font-size: .9rem;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+
+  /* ============ CARDS ============ */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    transition: background-color .3s ease, border-color .3s ease, box-shadow .25s ease;
+  }
+
+  .chip-icon {
+    width: 36px; height: 36px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    display: grid; place-items: center;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+  }
+  .chip-icon svg { width: 17px; height: 17px; stroke-width: 2; }
+
+  /* ============ FORM ============ */
+  .label {
+    display: block;
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .5rem;
+  }
+
+  .field {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 10px;
+    padding: .68rem .9rem;
+    font-size: .85rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .18s, box-shadow .18s, background-color .25s;
+  }
+  .field:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .field::placeholder { color: var(--muted-2); }
+  textarea.field { resize: vertical; min-height: 88px; line-height: 1.6; }
+
+  /* Segmented control */
+  .segmented { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+  .seg-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    padding: .62rem .55rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    font-size: .78rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all .18s ease;
+  }
+  .seg-btn svg { width: 15px; height: 15px; stroke-width: 2.2; }
+  .seg-btn:hover { color: var(--text); border-color: var(--border-2); }
+  .seg-btn.active[data-value="Kabar Baik"] {
+    background: var(--pos-soft);
+    border-color: var(--pos-border);
+    color: var(--pos);
+  }
+  .seg-btn.active[data-value="Kabar Buruk"] {
+    background: var(--neg-soft);
+    border-color: var(--neg-border);
+    color: var(--neg);
+  }
+
+  /* Range slider */
+  input[type="range"].range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    outline: none;
+    cursor: pointer;
+  }
+  input[type="range"].range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--surface);
+    box-shadow: 0 0 0 1px var(--accent), 0 4px 12px -4px var(--accent);
+    cursor: grab;
+    transition: transform .15s ease;
+  }
+  input[type="range"].range::-webkit-slider-thumb:hover { transform: scale(1.12); }
+  input[type="range"].range::-webkit-slider-thumb:active { cursor: grabbing; transform: scale(1.04); }
+  input[type="range"].range::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); border: 3px solid var(--surface);
+    box-shadow: 0 0 0 1px var(--accent); cursor: grab;
+  }
+
+  .score-pill {
+    min-width: 72px;
+    text-align: center;
+    padding: .5rem .6rem;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    transition: all .2s ease;
+    letter-spacing: -.01em;
+  }
+
+  /* ============ BUTTONS ============ */
+  .btn-primary {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .45rem;
+    padding: .75rem 1.4rem;
+    border: none;
+    border-radius: 10px;
+    font-size: .84rem;
+    font-weight: 700;
+    font-family: inherit;
+    color: #ffffff;
+    cursor: pointer;
+    background: var(--accent);
+    overflow: hidden;
+    transition: transform .18s cubic-bezier(.22, 1, .36, 1), filter .2s, opacity .2s, box-shadow .25s;
+  }
+  .btn-primary svg { width: 16px; height: 16px; stroke-width: 2.4; }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+    box-shadow: 0 8px 24px -8px var(--accent);
+  }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+  .icon-btn {
+    width: 38px; height: 38px;
+    flex-shrink: 0;
+    display: inline-grid; place-items: center;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .2s ease;
+  }
+  .icon-btn svg { width: 17px; height: 17px; stroke-width: 2; }
+  .icon-btn:hover {
+    color: var(--text);
+    border-color: var(--border-2);
+    background: var(--surface-2);
+  }
+
+  html[data-theme="dark"] .icon-moon { display: none; }
+  html[data-theme="light"] .icon-sun { display: none; }
+
+  /* ============ NET BADGE (HEADER) ============ */
+  .net-panel {
+    display: flex;
+    align-items: stretch;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .net-block {
+    padding: .55rem .95rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 92px;
+  }
+  .net-block + .net-block { border-left: 1px solid var(--border); }
+
+  .net-label {
+    font-size: .58rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .net-value {
+    font-size: .98rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.01em;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .net-value.pos { color: var(--pos); }
+  .net-value.neg { color: var(--neg); }
+
+  .net-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    font-size: .78rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.01em;
+  }
+  .net-delta svg { width: 12px; height: 12px; stroke-width: 3; }
+  .net-delta.pos { color: var(--pos); }
+  .net-delta.neg { color: var(--neg); }
+  .net-delta.neutral { color: var(--muted); }
+
+  /* ============ CHIPS ============ */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .28rem;
+    padding: .16rem .5rem;
+    border-radius: 999px;
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+  .chip svg { width: 11px; height: 11px; stroke-width: 2.6; }
+  .chip-pos { background: var(--pos-soft); border-color: var(--pos-border); color: var(--pos); }
+  .chip-neg { background: var(--neg-soft); border-color: var(--neg-border); color: var(--neg); }
+  .chip-fuzzy { background: var(--accent-soft); border-color: var(--accent-border); color: var(--accent); }
+  .chip-neutral { background: var(--surface-2); border-color: var(--border); color: var(--muted); }
+
+  /* ============ LOG CARDS ============ */
+  .log-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .95rem 1.15rem;
+    border-radius: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: transform .22s cubic-bezier(.22, 1, .36, 1), border-color .2s, box-shadow .25s, background-color .2s;
+  }
+  .log-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-2);
+    box-shadow: var(--shadow-md);
+  }
+
+  .log-accent {
+    position: absolute;
+    left: 0; top: 12px; bottom: 12px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    transition: top .25s ease, bottom .25s ease;
+  }
+  .log-card:hover .log-accent { top: 6px; bottom: 6px; }
+
+  .log-main { flex: 1; min-width: 0; }
+
+  .log-meta {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    flex-wrap: wrap;
+    margin-bottom: .35rem;
+  }
+  .log-date { font-size: .68rem; color: var(--muted); font-weight: 500; }
+
+  .log-title {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 650;
+    color: var(--text);
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    letter-spacing: -.005em;
+  }
+
+  mark.hl {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 3px;
+    padding: 0 3px;
+    font-weight: 800;
+  }
+
+  .metrics { display: flex; gap: .5rem; flex-shrink: 0; }
+
+  .metric {
+    min-width: 78px;
+    text-align: right;
+    padding: .4rem .6rem;
+    border-radius: 9px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .metric span {
+    font-size: .55rem;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  .metric strong {
+    font-size: .92rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.015em;
+    line-height: 1.2;
+  }
+  .metric small {
+    font-size: .6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.005em;
+    line-height: 1.2;
+    opacity: .95;
+  }
+
+  /* ============ EMPTY / SKELETON ============ */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .65rem;
+    padding: 2.6rem 1.5rem;
+    border-radius: 12px;
+    border: 1px dashed var(--border-2);
+    background: var(--surface);
+    color: var(--muted);
+    text-align: center;
+  }
+  .empty-state svg { width: 30px; height: 30px; opacity: .5; stroke-width: 1.8; }
+  .empty-state p { margin: 0; font-size: .83rem; }
+
+  .skeleton {
+    height: 68px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 37%, var(--surface-2) 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+
+  /* ============ ANIMATIONS ============ */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-in { animation: fadeUp .5s cubic-bezier(.22, 1, .36, 1) both; }
+
+  @keyframes popValue {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+  .pop { animation: popValue .45s cubic-bezier(.22, 1, .36, 1); }
+
+  .view { animation: fadeUp .35s ease both; }
+  .view.hidden { display: none; }
+
+  /* ============ MODAL ============ */
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+    background: rgba(3, 8, 18, .72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+  }
+  .modal-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  .modal-panel {
+    width: 100%;
+    max-width: 580px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border-2);
+    box-shadow: var(--shadow-lg);
+    transform: scale(.96) translateY(10px);
+    opacity: 0;
+    transition: transform .3s cubic-bezier(.22, 1, .36, 1), opacity .25s ease;
+  }
+  .modal-backdrop.open .modal-panel { transform: scale(1) translateY(0); opacity: 1; }
+
+  /* ============ TOAST ============ */
+  .toast {
+    position: fixed;
+    bottom: 1.4rem; right: 1.4rem;
+    z-index: 200;
+    display: flex; align-items: center; gap: .55rem;
+    padding: .75rem 1rem;
+    border-radius: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border-2);
+    box-shadow: var(--shadow-lg);
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--text);
+    transform: translateY(160%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform .45s cubic-bezier(.22, 1, .36, 1), opacity .28s ease;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast svg { width: 17px; height: 17px; flex-shrink: 0; stroke-width: 2.4; }
+  .toast.ok svg { color: var(--pos); }
+  .toast.err svg { color: var(--neg); }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 880px) {
+    .sidebar {
+      position: fixed;
+      left: 0; right: 0; bottom: 0; top: auto;
+      width: 100%; height: auto;
+      flex-direction: row;
+      align-items: center;
+      gap: .35rem;
+      padding: .5rem .55rem;
+      border-right: none;
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -8px 24px -18px rgba(0, 0, 0, .5);
+    }
+    .brand, .sidebar-footer { display: none; }
+    .nav { flex-direction: row; width: 100%; gap: .35rem; }
+    .nav-item {
+      flex: 1;
+      flex-direction: column;
+      justify-content: center;
+      gap: .15rem;
+      padding: .5rem .35rem;
+      font-size: .62rem;
+      text-align: center;
+    }
+    .nav-item .num { display: none; }
+    .main { padding-bottom: 78px; }
+    .toast { bottom: 5.4rem; left: 1rem; right: 1rem; }
+  }
+
+  @media (max-width: 640px) {
+    .log-card { flex-direction: column; align-items: stretch; gap: .75rem; }
+    .log-title { white-space: normal; }
+    .metrics { width: 100%; }
+    .metric { flex: 1; text-align: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      transition-duration: .001ms !important;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <img src="logo.png" alt="Logo GIN">
+      </div>
+      <div>
+        <div class="brand-name">GIN</div>
+        <div class="brand-sub">MY JOURNEY</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="upload">
+        <i data-lucide="upload"></i>
+        <span>Upload Journey</span>
+        <span class="num">01</span>
+      </button>
+      <button class="nav-item" data-view="journey">
+        <i data-lucide="compass"></i>
+        <span>My Journey</span>
+        <span class="num">02</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="mini-stat"><span>Total Momen</span><strong id="stat-count">0</strong></div>
+      <div class="mini-stat"><span>Net Value</span><strong id="stat-net">0</strong></div>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+    <div class="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-9">
+
+      <!-- HEADER -->
+      <header class="mb-7 flex items-start justify-between gap-4 flex-wrap">
+        <div class="min-w-0">
+          <h1 id="page-title" class="text-2xl md:text-[1.75rem] font-extrabold tracking-tight m-0 leading-tight">
+            Upload Journey
+          </h1>
+          <p id="page-subtitle" class="text-[.82rem] mt-1.5 m-0" style="color:var(--muted)">
+            Catat momen dan beri bobotnya.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="net-panel">
+            <div class="net-block">
+              <div class="net-label">Net Value</div>
+              <div id="net-value" class="net-value pos">0</div>
+            </div>
+            <div class="net-block">
+              <div class="net-label">Perubahan</div>
+              <div id="net-delta" class="net-delta pos">
+                <i data-lucide="arrow-up-right"></i>
+                <span>0%</span>
+              </div>
+            </div>
+          </div>
+          <button id="theme-toggle" class="icon-btn" title="Ganti tema" aria-label="Ganti tema">
+            <i data-lucide="sun" class="icon-sun"></i>
+            <i data-lucide="moon" class="icon-moon"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- ================= VIEW 1 : UPLOAD ================= -->
+      <section id="view-upload" class="view">
+        <div class="card p-6 md:p-7 animate-in">
+
+          <div class="flex items-center gap-3 mb-6">
+            <div class="chip-icon"><i data-lucide="plus-circle"></i></div>
+            <div>
+              <h2 class="text-[.95rem] font-bold m-0">Catat Momen Baru</h2>
+              <p class="text-[.72rem] m-0 mt-0.5" style="color:var(--muted)">
+                Setiap momen punya bobotnya sendiri.
+              </p>
+            </div>
+          </div>
+
+          <form id="log-form" class="space-y-5">
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="label" for="date">Tanggal</label>
+                <input type="date" id="date" required class="field">
+              </div>
+
+              <div>
+                <label class="label">Jenis Kabar</label>
+                <div class="segmented" id="category-group">
+                  <button type="button" class="seg-btn active" data-value="Kabar Baik">
+                    <i data-lucide="trending-up"></i> Kabar Baik
+                  </button>
+                  <button type="button" class="seg-btn" data-value="Kabar Buruk">
+                    <i data-lucide="trending-down"></i> Kabar Buruk
+                  </button>
+                </div>
+                <input type="hidden" id="category" value="Kabar Baik">
+              </div>
+            </div>
+
+            <div>
+              <label class="label" for="impact">Skor Dampak</label>
+              <div class="flex items-center gap-3">
+                <input type="range" id="impact" class="range flex-1" min="-40" max="20" step="1" value="0">
+                <div id="impact-display" class="score-pill">0</div>
+              </div>
+              <div class="flex justify-between text-[10px] mt-2" style="color:var(--muted-2)">
+                <span>-40 &nbsp;·&nbsp; dampak berat</span>
+                <span>dampak positif &nbsp;·&nbsp; 20</span>
+              </div>
+            </div>
+
+            <div>
+              <label class="label" for="title">Judul Peristiwa</label>
+              <input type="text" id="title" required maxlength="120"
+                     placeholder="Apa yang terjadi hari ini?" class="field">
+            </div>
+
+            <div>
+              <label class="label" for="description">Deskripsi &amp; Catatan</label>
+              <textarea id="description" rows="4"
+                        placeholder="Ceritakan detailnya, perasaanmu, dan pelajarannya..." class="field"></textarea>
+            </div>
+
+            <div class="flex justify-end pt-1">
+              <button type="submit" class="btn-primary w-full md:w-auto">
+                <i data-lucide="check"></i>
+                <span>Simpan Catatan</span>
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 2 : MY JOURNEY ================= -->
+      <section id="view-journey" class="view hidden space-y-5">
+
+        <!-- SEARCH -->
+        <div class="card p-3.5 animate-in">
+          <div class="relative">
+            <i data-lucide="search"
+               class="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+               style="width:16px;height:16px;color:var(--muted);stroke-width:2.2"></i>
+            <input type="text" id="search-input" autocomplete="off"
+                   placeholder="Cari momen... (typo pun tetap ketemu)"
+                   class="field pl-10 pr-10">
+            <button id="clear-search" type="button"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 hidden icon-btn"
+                    style="width:28px;height:28px;border-radius:8px" title="Bersihkan">
+              <i data-lucide="x" style="width:13px;height:13px"></i>
+            </button>
+          </div>
+          <div id="search-info" class="text-[.72rem] mt-2.5 px-1" style="color:var(--muted)"></div>
+        </div>
+
+        <!-- CHART -->
+        <div class="card p-5 md:p-6 animate-in" style="animation-delay:60ms">
+          <div class="flex items-center justify-between gap-4 mb-5 flex-wrap">
+            <div class="flex items-center gap-3">
+              <div class="chip-icon"><i data-lucide="line-chart"></i></div>
+              <div>
+                <h2 class="text-[.95rem] font-bold m-0">Pergerakan Nilai</h2>
+                <p class="text-[.72rem] m-0 mt-0.5" style="color:var(--muted)">
+                  Kumulatif — tiap momen lanjut dari nilai sebelumnya
+                </p>
+              </div>
+            </div>
+            <select id="chartType" class="field" style="width:auto;padding:.45rem .7rem;font-size:.78rem">
+              <option value="line">Grafik Garis</option>
+              <option value="bar">Grafik Batang</option>
+            </select>
+          </div>
+          <div class="w-full" style="height:320px"><canvas id="momentumChart"></canvas></div>
+        </div>
+
+        <!-- LOGS -->
+        <div class="animate-in" style="animation-delay:120ms">
+          <div class="flex items-center justify-between mb-3.5 px-1">
+            <h2 class="text-[.95rem] font-bold m-0">Riwayat Perjalanan</h2>
+            <span class="text-[.7rem]" style="color:var(--muted)">Terbaru di atas</span>
+          </div>
+          <div id="logs-container" class="space-y-2.5"></div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<!-- ================= MODAL ================= -->
+<div id="detail-modal" class="modal-backdrop">
+  <div class="modal-panel">
+    <div class="p-6 md:p-7">
+
+      <div class="flex items-start justify-between gap-4 mb-5">
+        <div class="min-w-0">
+          <span id="modal-category" class="chip chip-pos"></span>
+          <h2 id="modal-title" class="text-lg md:text-xl font-extrabold m-0 mt-3 leading-snug tracking-tight"></h2>
+          <p id="modal-date" class="text-[.72rem] mt-1.5 m-0" style="color:var(--muted)"></p>
+        </div>
+        <button id="modal-close" class="icon-btn" style="width:32px;height:32px;border-radius:9px" title="Tutup">
+          <i data-lucide="x" style="width:15px;height:15px"></i>
+        </button>
+      </div>
+
+      <div class="mb-5">
+        <h3 class="label">Catatan Peristiwa</h3>
+        <p id="modal-desc"
+           class="text-[.83rem] leading-relaxed whitespace-pre-wrap m-0 p-3.5 rounded-xl"
+           style="background:var(--surface-2);border:1px solid var(--border);color:var(--text)"></p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 pt-5" style="border-top:1px solid var(--border)">
+        <div>
+          <span class="label mb-1">Skor Input</span>
+          <span id="modal-input-score" class="text-lg font-extrabold" style="font-variant-numeric:tabular-nums">0</span>
+        </div>
+        <div>
+          <span class="label mb-1">Perubahan</span>
+          <span id="modal-delta" class="text-lg font-extrabold" style="font-variant-numeric:tabular-nums">0%</span>
+        </div>
+        <div class="text-right">
+          <span class="label mb-1">Net Value</span>
+          <span id="modal-net-score" class="text-xl font-extrabold" style="font-variant-numeric:tabular-nums">0</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================= TOAST ================= -->
+<div id="toast" class="toast ok">
+  <i data-lucide="check-circle"></i>
+  <span id="toast-text">Tersimpan</span>
+</div>
+
+<script>
+/* =========================================================
+   KONFIGURASI
+   ========================================================= */
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwMF0C1BKKu_PPTScy3Q6k-aRyVXnKU_ADA9LRFeqkykEqEetp0t6V3OL3SM8OJIyjy3g/exec';
+
+/* =========================================================
+   HELPER
+   ========================================================= */
+const DAYS   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+function $(id) { return document.getElementById(id); }
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => (
+    { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]
+  ));
+}
+
+function parseDate(v) {
+  if (!v) return null;
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function fmtLong(d) {
+  if (!d) return '-';
+  return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function fmtShort(d) {
+  if (!d) return '-';
+  return `${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()].slice(0,3)}`;
+}
+
+function fmtScore(n) {
+  const v = Number(n) || 0;
+  return v > 0 ? '+' + v : String(v);
+}
+
+function fmtPct(p) {
+  const v = Number(p) || 0;
+  const sign = v > 0 ? '+' : '';
+  return sign + v.toFixed(1) + '%';
+}
+
+function cssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function hexToRgba(hex, alpha) {
+  let h = (hex || '').replace('#', '').trim();
+  if (h.length === 3) h = h.split('').map(c => c + c).join('');
+  if (h.length !== 6) return `rgba(14,165,233,${alpha})`;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function refreshIcons() {
+  if (window.lucide && typeof window.lucide.createIcons === 'function') {
+    try { window.lucide.createIcons(); } catch (e) {}
+  }
+}
+
+/** Hitung persentase perubahan dari prev ke curr */
+function calcPct(curr, prev) {
+  if (prev === 0) {
+    if (curr === 0) return 0;
+    return curr > 0 ? 100 : -100;
+  }
+  return ((curr - prev) / Math.abs(prev)) * 100;
+}
+
+/* =========================================================
+   FUZZY SEARCH
+   ========================================================= */
+function normalize(str) {
+  return String(str ?? '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let prev = new Array(b.length + 1);
+  let curr = new Array(b.length + 1);
+  for (let j = 0; j <= b.length; j++) prev[j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    curr[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      curr[j] = Math.min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + cost);
+    }
+    const tmp = prev; prev = curr; curr = tmp;
+  }
+  return prev[b.length];
+}
+
+function similarity(a, b) {
+  if (!a && !b) return 1;
+  if (!a || !b) return 0;
+  return 1 - (levenshtein(a, b) / Math.max(a.length, b.length));
+}
+
+function fuzzyScore(text, query) {
+  const t = normalize(text);
+  const q = normalize(query);
+  if (!q || !t) return 0;
+
+  if (q.length >= 2) {
+    if (t === q) return 1;
+    if (t.startsWith(q)) return 0.97;
+    if (t.includes(q)) return 0.9;
+  }
+
+  const tWords = t.split(' ').filter(Boolean);
+  const qWords = q.split(' ').filter(Boolean);
+  if (!tWords.length || !qWords.length) return 0;
+
+  let total = 0;
+  for (const qw of qWords) {
+    let best = 0;
+    for (const tw of tWords) {
+      let s;
+      if (qw.length >= 3 && tw.startsWith(qw)) s = 0.9;
+      else s = similarity(qw, tw);
+      if (s > best) best = s;
+    }
+    total += best;
+  }
+  return (total / qWords.length) * 0.94;
+}
+
+function scoreEntry(log, q) {
+  const sTitle = fuzzyScore(log.title, q);
+  const sDesc  = fuzzyScore(log.description, q) * 0.60;
+  const sCat   = fuzzyScore(log.category, q) * 0.50;
+  const sDate  = fuzzyScore(log._dateText, q) * 0.55;
+  return Math.max(sTitle, sDesc, sCat, sDate);
+}
+
+function highlight(text, q) {
+  const raw = String(text ?? '');
+  const safe = escapeHtml(raw);
+  const query = (q || '').trim();
+  if (!query || query.length < 2) return safe;
+  const idx = raw.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return safe;
+  return escapeHtml(raw.slice(0, idx))
+       + '<mark class="hl">' + escapeHtml(raw.slice(idx, idx + query.length)) + '</mark>'
+       + escapeHtml(raw.slice(idx + query.length));
+}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+let allLogs = [];
+let searchQuery = '';
+let chartBuilt = false;
+let momentumChart = null;
+let lastNetValue = 0;
+let lastPctValue = 0;
+
+/* =========================================================
+   TEMA
+   ========================================================= */
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  try { localStorage.setItem('gin-theme', theme); } catch (e) {}
+  if (chartBuilt) buildChart();
+}
+
+$('theme-toggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+});
+
+/* =========================================================
+   NAVIGASI
+   ========================================================= */
+const PAGE_META = {
+  upload: { title: 'Upload Journey', subtitle: 'Catat momen dan beri bobotnya.' },
+  journey: { title: 'My Journey', subtitle: 'Telusuri kembali seluruh perjalananmu.' }
+};
+
+function switchView(name) {
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === name);
+  });
+  $('view-upload').classList.toggle('hidden', name !== 'upload');
+  $('view-journey').classList.toggle('hidden', name !== 'journey');
+
+  const meta = PAGE_META[name] || PAGE_META.upload;
+  $('page-title').textContent = meta.title;
+  $('page-subtitle').textContent = meta.subtitle;
+
+  if (name === 'journey') {
+    maybeBuildChart();
+    requestAnimationFrame(() => {
+      setTimeout(() => { if (momentumChart) momentumChart.resize(); }, 60);
+    });
+  }
+}
+
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => switchView(btn.dataset.view));
+});
+
+/* =========================================================
+   FORM : KATEGORI
+   ========================================================= */
+document.querySelectorAll('#category-group .seg-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#category-group .seg-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    $('category').value = btn.dataset.value;
+  });
+});
+
+/* =========================================================
+   SLIDER
+   ========================================================= */
+const impactRange = $('impact');
+const impactDisplay = $('impact-display');
+
+function updateImpactUI() {
+  const v = Number(impactRange.value);
+  const positive = v >= 0;
+  const color = positive ? cssVar('--pos') : cssVar('--neg');
+  const soft  = positive ? cssVar('--pos-soft') : cssVar('--neg-soft');
+  const brd   = positive ? cssVar('--pos-border') : cssVar('--neg-border');
+
+  impactDisplay.textContent = fmtScore(v);
+  impactDisplay.style.color = color;
+  impactDisplay.style.background = soft;
+  impactDisplay.style.borderColor = brd;
+
+  const pct = ((v + 40) / 60) * 100;
+  impactRange.style.background =
+    `linear-gradient(90deg, ${color} 0%, ${color} ${pct}%, var(--surface-3) ${pct}%, var(--surface-3) 100%)`;
+}
+
+impactRange.addEventListener('input', updateImpactUI);
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+let toastTimer = null;
+function showToast(message, type = 'ok') {
+  const el = $('toast');
+  $('toast-text').textContent = message;
+  el.className = 'toast show ' + (type === 'ok' ? 'ok' : 'err');
+  el.querySelector('svg')?.remove();
+  el.insertAdjacentHTML('afterbegin',
+    `<i data-lucide="${type === 'ok' ? 'check-circle' : 'alert-circle'}"></i>`);
+  refreshIcons();
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); }, 3000);
+}
+
+/* =========================================================
+   AMBIL DATA
+   ========================================================= */
+function showSkeleton() {
+  $('logs-container').innerHTML = `
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>`;
+}
+
+async function fetchLogs() {
+  showSkeleton();
+  try {
+    const res = await fetch(SCRIPT_URL, { cache: 'no-store' });
+    const data = await res.json();
+
+    const raw = Array.isArray(data) ? data.filter(Boolean) : [];
+
+    raw.sort((a, b) => {
+      const da = parseDate(a.tanggal);
+      const db = parseDate(b.tanggal);
+      if (!da && !db) return 0;
+      if (!da) return -1;
+      if (!db) return 1;
+      return da - db;
+    });
+
+    let running = 0;
+    allLogs = raw.map((log, i) => {
+      const score = Number(log.impact_score) || 0;
+      const before = running;
+      running += score;
+      const pct = calcPct(running, before);
+      const d = parseDate(log.tanggal);
+      return {
+        ...log,
+        _id: i,
+        input_score: score,
+        net_score: running,
+        prev_net: before,
+        delta_pct: pct,
+        _dateObj: d,
+        _dateText: d ? `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}` : ''
+      };
+    });
+
+    const finalNet = allLogs.length ? allLogs[allLogs.length - 1].net_score : 0;
+    const firstNet = allLogs.length ? allLogs[0].prev_net : 0;
+    const totalPct = calcPct(finalNet, firstNet);
+
+    updateNetPanel(finalNet, totalPct);
+    $('stat-count').textContent = allLogs.length;
+    $('stat-net').textContent = fmtScore(finalNet);
+    $('stat-net').style.color = finalNet >= 0 ? 'var(--pos)' : 'var(--neg)';
+
+    renderLogs(true);
+    maybeBuildChart();
+
+  } catch (error) {
+    $('logs-container').innerHTML = `
+      <div class="empty-state" style="border-color:var(--neg-border);color:var(--neg)">
+        <i data-lucide="alert-circle"></i>
+        <p>Gagal memuat data. Periksa koneksi atau URL API.</p>
+      </div>`;
+    refreshIcons();
+  }
+}
+
+/* =========================================================
+   NET PANEL (header)
+   ========================================================= */
+function updateNetPanel(value, pct) {
+  const valEl = $('net-value');
+  const deltaEl = $('net-delta');
+
+  valEl.classList.remove('pos', 'neg');
+  valEl.classList.add(value >= 0 ? 'pos' : 'neg');
+
+  deltaEl.classList.remove('pos', 'neg', 'neutral');
+  if (Math.abs(pct) < 0.05) deltaEl.classList.add('neutral');
+  else if (pct > 0) deltaEl.classList.add('pos');
+  else deltaEl.classList.add('neg');
+
+  const iconName = Math.abs(pct) < 0.05
+    ? 'minus'
+    : (pct > 0 ? 'arrow-up-right' : 'arrow-down-right');
+
+  deltaEl.innerHTML = `<i data-lucide="${iconName}"></i><span>${fmtPct(pct)}</span>`;
+  refreshIcons();
+
+  const from = lastNetValue;
+  const to = value;
+  const start = performance.now();
+  const dur = 800;
+
+  function frame(now) {
+    const p = Math.min((now - start) / dur, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    const cur = Math.round(from + (to - from) * eased);
+    valEl.textContent = fmtScore(cur);
+    if (p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  lastNetValue = to;
+
+  deltaEl.classList.remove('pop');
+  void deltaEl.offsetWidth;
+  deltaEl.classList.add('pop');
+}
+
+/* =========================================================
+   RENDER LOG LIST
+   ========================================================= */
+function renderLogs(animate = false) {
+  const container = $('logs-container');
+  const infoEl = $('search-info');
+  const q = searchQuery.trim();
+
+  let items = [];
+
+  if (!q) {
+    items = allLogs.slice().reverse().map(log => ({ log, score: 1, fuzzy: false }));
+    infoEl.textContent = allLogs.length
+      ? `${allLogs.length} momen tercatat dalam perjalananmu.`
+      : 'Belum ada momen yang tercatat.';
+    $('clear-search').classList.add('hidden');
+  } else {
+    $('clear-search').classList.remove('hidden');
+
+    const scored = allLogs
+      .map(log => ({ log, score: scoreEntry(log, q) }))
+      .sort((a, b) => b.score - a.score || (b.log._dateObj - a.log._dateObj));
+
+    const strong = scored.filter(r => r.score >= 0.55);
+
+    if (strong.length) {
+      items = strong.map(r => ({ ...r, fuzzy: false }));
+      infoEl.innerHTML = `<strong style="color:var(--accent)">${strong.length}</strong> hasil untuk "<strong>${escapeHtml(q)}</strong>"`;
+    } else {
+      const weak = scored.filter(r => r.score >= 0.16).slice(0, 4);
+      items = weak.map(r => ({ ...r, fuzzy: true }));
+      infoEl.innerHTML = weak.length
+        ? `Tidak ada yang persis cocok — menampilkan <strong style="color:var(--accent)">${weak.length}</strong> hasil terdekat.`
+        : `Tidak ada hasil untuk "<strong>${escapeHtml(q)}</strong>".`;
+    }
+  }
+
+  if (!items.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i data-lucide="${q ? 'search' : 'inbox'}"></i>
+        <p>${q ? 'Tidak ada momen yang cocok dengan pencarianmu.' : 'Belum ada catatan perjalanan. Mulai catat momen pertamamu!'}</p>
+      </div>`;
+    refreshIcons();
+    return;
+  }
+
+  container.innerHTML = items.map((item, idx) => {
+    const log = item.log;
+    const isGood = log.category === 'Kabar Baik';
+    const inputColor = log.input_score >= 0 ? 'var(--pos)' : 'var(--neg)';
+    const netColor = log.net_score >= 0 ? 'var(--pos)' : 'var(--neg)';
+    const deltaColor = Math.abs(log.delta_pct) < 0.05
+      ? 'var(--muted)'
+      : (log.delta_pct > 0 ? 'var(--pos)' : 'var(--neg)');
+    const deltaIcon = Math.abs(log.delta_pct) < 0.05
+      ? 'minus'
+      : (log.delta_pct > 0 ? 'arrow-up-right' : 'arrow-down-right');
+
+    const delay = animate ? Math.min(idx * 40, 420) : 0;
+    const animStyle = animate ? `animation-delay:${delay}ms` : 'animation:none';
+
+    const fuzzyChip = item.fuzzy
+      ? `<span class="chip chip-fuzzy">≈ ${Math.round(item.score * 100)}%</span>`
+      : '';
+
+    return `
+      <article class="log-card animate-in" data-log-id="${log._id}" style="${animStyle}">
+        <span class="log-accent" style="background:${isGood ? 'var(--pos)' : 'var(--neg)'}"></span>
+
+        <div class="log-main">
+          <div class="log-meta">
+            <span class="chip ${isGood ? 'chip-pos' : 'chip-neg'}">
+              <i data-lucide="${isGood ? 'trending-up' : 'trending-down'}"></i>${escapeHtml(log.category)}
+            </span>
+            <span class="log-date">${escapeHtml(fmtLong(log._dateObj))}</span>
+            ${fuzzyChip}
+          </div>
+          <h4 class="log-title">${highlight(log.title, q)}</h4>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <span>Delta</span>
+            <strong style="color:${inputColor}">${fmtScore(log.input_score)}</strong>
+            <small style="color:${deltaColor}">
+              <i data-lucide="${deltaIcon}" style="width:10px;height:10px;vertical-align:-1px;stroke-width:3"></i>
+              ${fmtPct(log.delta_pct)}
+            </small>
+          </div>
+          <div class="metric">
+            <span>Net</span>
+            <strong style="color:${netColor}">${fmtScore(log.net_score)}</strong>
+          </div>
+        </div>
+      </article>`;
+  }).join('');
+
+  refreshIcons();
+}
+
+$('logs-container').addEventListener('click', (e) => {
+  const card = e.target.closest('[data-log-id]');
+  if (!card) return;
+  openModal(Number(card.dataset.logId));
+});
+
+/* =========================================================
+   PENCARIAN
+   ========================================================= */
+let searchTimer = null;
+$('search-input').addEventListener('input', (e) => {
+  clearTimeout(searchTimer);
+  const val = e.target.value;
+  searchTimer = setTimeout(() => {
+    searchQuery = val;
+    renderLogs(false);
+  }, 160);
+});
+
+$('clear-search').addEventListener('click', () => {
+  $('search-input').value = '';
+  searchQuery = '';
+  renderLogs(false);
+  $('search-input').focus();
+});
+
+/* =========================================================
+   CHART — Sistem Kumulatif (Running Balance)
+   ---------------------------------------------------------
+   • Setiap batang/momen dimulai dari NILAI AKHIR momen sebelumnya
+     (bukan direset ke 0).
+   • Batang hijau = net naik dari momen sebelumnya.
+   • Batang merah = net turun dari momen sebelumnya.
+   • Batang saling menempel (tanpa celah) agar tampak sebagai
+     pita/silinder bersambung yang mengikuti running balance.
+   • Line chart juga kumulatif, bersambung dari titik awal 0.
+   ========================================================= */
+const chartSelect = $('chartType');
+
+function maybeBuildChart() {
+  const journeyVisible = !$('view-journey').classList.contains('hidden');
+  if (journeyVisible && allLogs.length) {
+    buildChart();
+    chartBuilt = true;
+  }
+}
+
+function buildChart() {
+  const canvas = $('momentumChart');
+  if (!canvas) return;
+  if (momentumChart) { momentumChart.destroy(); momentumChart = null; }
+  if (!allLogs.length) return;
+
+  const type = chartSelect.value;
+  const accent    = cssVar('--accent');
+  const pos       = cssVar('--pos');
+  const neg       = cssVar('--neg');
+  const grid      = cssVar('--grid');
+  const muted     = cssVar('--muted');
+  const surface   = cssVar('--surface');
+  const textColor = cssVar('--text');
+  const border2   = cssVar('--border-2');
+
+  // ===== DATA KUMULATIF =====
+  const titles    = allLogs.map(log => [log.title, fmtShort(log._dateObj)]);
+  const netValues = allLogs.map(log => log.net_score);   // saldo akhir per momen
+
+  // Titik awal tiap momen = saldo akhir momen sebelumnya (momen pertama mulai dari 0)
+  const barStart = allLogs.map((_, i) => (i === 0 ? 0 : netValues[i - 1]));
+  const barEnd   = netValues.slice();
+
+  // Untuk line chart: baseline 0 dulu, lalu lanjut ke tiap saldo berjalan
+  const lineLabels = ['Awal', ...titles];
+  const lineValues = [0, ...netValues];
+
+  let labels;
+  let dataset;
+
+  if (type === 'line') {
+    // ===== LINE: saldo berjalan bersambung =====
+    labels = lineLabels;
+
+    dataset = {
+      label: 'Net Value',
+      data: lineValues,
+      borderWidth: 2.5,
+      tension: 0.32,
+      pointRadius: 3.5,
+      pointHoverRadius: 7,
+      pointBorderWidth: 2,
+      pointBorderColor: surface,
+      segment: {
+        borderColor: (ctx) => {
+          const y0 = ctx.p0.parsed.y;
+          const y1 = ctx.p1.parsed.y;
+          if (y1 > y0) return pos;
+          if (y1 < y0) return neg;
+          return accent;
+        }
+      },
+      pointBackgroundColor: (ctx) => {
+        const i = ctx.dataIndex;
+        if (i === 0) return muted;
+        const prev = lineValues[i - 1];
+        const curr = lineValues[i];
+        if (curr > prev) return pos;
+        if (curr < prev) return neg;
+        return accent;
+      },
+      fill: { target: 'origin', above: hexToRgba(accent, 0.06) },
+      borderCapStyle: 'round',
+      borderJoinStyle: 'round'
+    };
+
+  } else {
+    // ===== BAR: floating bar (batang kumulatif bersambung) =====
+    labels = titles;
+
+    // Chart.js floating bar menerima data [min, max].
+    // Kita kirim [start, end] agar batang benar-benar berangkat dari
+    // nilai akhir momen sebelumnya, bukan dari sumbu 0.
+    const barData = barEnd.map((end, i) => [
+      Math.min(barStart[i], end),
+      Math.max(barStart[i], end)
+    ]);
+
+    dataset = {
+      label: 'Net Value',
+      data: barData,
+      backgroundColor: barEnd.map((end, i) => {
+        const start = barStart[i];
+        if (end > start) return hexToRgba(pos, 0.7);
+        if (end < start) return hexToRgba(neg, 0.7);
+        return hexToRgba(accent, 0.55);
+      }),
+      borderColor: barEnd.map((end, i) => {
+        const start = barStart[i];
+        if (end > start) return pos;
+        if (end < start) return neg;
+        return accent;
+      }),
+      borderWidth: 0,
+      borderRadius: 0,
+      borderSkipped: false,
+      categoryPercentage: 1.0,
+      barPercentage: 1.0
+    };
+  }
+
+  momentumChart = new Chart(canvas.getContext('2d'), {
+    type: type,
+    data: { labels, datasets: [dataset] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 900, easing: 'easeOutQuart' },
+      interaction: { mode: 'index', intersect: false },
+      bar: {
+        categoryPercentage: 1.0,
+        barPercentage: 1.0
+      },
+      scales: {
+        y: {
+          grid: { color: grid, drawBorder: false },
+          ticks: {
+            color: muted,
+            font: { size: 11, weight: '500' },
+            padding: 8,
+            callback: (v) => fmtScore(v)
+          }
+        },
+        x: {
+          grid: { display: false },
+          ticks: {
+            color: muted,
+            font: { size: 10, weight: '500' },
+            maxRotation: 0,
+            autoSkipPadding: 20
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: surface,
+          titleColor: textColor,
+          bodyColor: textColor,
+          borderColor: border2,
+          borderWidth: 1,
+          padding: 12,
+          cornerRadius: 10,
+          displayColors: false,
+          titleFont: { size: 12, weight: '700' },
+          bodyFont: { size: 12, weight: '600' },
+          callbacks: {
+            title: (items) => {
+              if (!items.length) return '';
+              const i = items[0].dataIndex;
+              if (type === 'line') {
+                if (i === 0) return 'Titik Awal';
+                return allLogs[i - 1]?.title || '';
+              }
+              return allLogs[i]?.title || '';
+            },
+            label: (item) => {
+              const i = item.dataIndex;
+
+              if (type === 'line') {
+                if (i === 0) return 'Net: 0';
+                const log  = allLogs[i - 1];
+                const prev = lineValues[i - 1];
+                const curr = lineValues[i];
+                const pct  = calcPct(curr, prev);
+                return [
+                  'Net: ' + fmtScore(curr),
+                  'Perubahan: ' + fmtScore(log.input_score) + '  ·  ' + fmtPct(pct)
+                ];
+              }
+
+              const log   = allLogs[i];
+              const start = barStart[i];
+              const end   = barEnd[i];
+              const pct   = calcPct(end, start);
+              return [
+                'Dari ' + fmtScore(start) + '  →  ' + fmtScore(end),
+                'Perubahan: ' + fmtScore(log.input_score) + '  ·  ' + fmtPct(pct)
+              ];
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+chartSelect.addEventListener('change', () => {
+  if (chartBuilt) buildChart();
+});
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+function openModal(id) {
+  const log = allLogs.find(l => l._id === id);
+  if (!log) return;
+
+  const isGood = log.category === 'Kabar Baik';
+
+  const catEl = $('modal-category');
+  catEl.className = 'chip ' + (isGood ? 'chip-pos' : 'chip-neg');
+  catEl.innerHTML = `<i data-lucide="${isGood ? 'trending-up' : 'trending-down'}"></i>${escapeHtml(log.category)}`;
+
+  $('modal-title').textContent = log.title || '(Tanpa judul)';
+  $('modal-date').textContent = fmtLong(log._dateObj);
+  $('modal-desc').textContent = log.description || 'Tidak ada detail yang dicatat.';
+
+  const inputEl = $('modal-input-score');
+  inputEl.textContent = fmtScore(log.input_score);
+  inputEl.style.color = log.input_score >= 0 ? 'var(--pos)' : 'var(--neg)';
+
+  const deltaEl = $('modal-delta');
+  deltaEl.textContent = fmtPct(log.delta_pct);
+  deltaEl.style.color = Math.abs(log.delta_pct) < 0.05
+    ? 'var(--muted)'
+    : (log.delta_pct > 0 ? 'var(--pos)' : 'var(--neg)');
+
+  const netEl = $('modal-net-score');
+  netEl.textContent = fmtScore(log.net_score);
+  netEl.style.color = log.net_score >= 0 ? 'var(--pos)' : 'var(--neg)';
+
+  $('detail-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  refreshIcons();
+}
+
+function closeModal() {
+  $('detail-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+$('modal-close').addEventListener('click', closeModal);
+$('detail-modal').addEventListener('click', (e) => {
+  if (e.target === $('detail-modal')) closeModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
+});
+
+/* =========================================================
+   SUBMIT FORM
+   ========================================================= */
+$('log-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const btn = e.target.querySelector('button[type="submit"]');
+  const label = btn.querySelector('span');
+  const original = label.textContent;
+
+  btn.disabled = true;
+  label.textContent = 'Menyimpan...';
+
+  const payload = {
+    date: $('date').value,
+    category: $('category').value,
+    title: $('title').value.trim(),
+    impact: $('impact').value,
+    description: $('description').value.trim() || 'Tidak ada detail yang dicatat.'
+  };
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+      redirect: 'follow'
+    });
+
+    e.target.reset();
+    $('date').valueAsDate = new Date();
+    impactRange.value = 0;
+    updateImpactUI();
+
+    document.querySelectorAll('#category-group .seg-btn').forEach((b, i) => {
+      b.classList.toggle('active', i === 0);
+    });
+    $('category').value = 'Kabar Baik';
+
+    await fetchLogs();
+    showToast('Momen berhasil disimpan!', 'ok');
+  } catch (err) {
+    showToast('Gagal menyimpan data. Coba lagi.', 'err');
+  }
+
+  btn.disabled = false;
+  label.textContent = original;
+});
+
+/* =========================================================
+   INIT
+   ========================================================= */
+(function init() {
+  $('date').valueAsDate = new Date();
+  updateImpactUI();
+  refreshIcons();
+  fetchLogs();
+})();
+</script>
+
+</body>
+</html>
