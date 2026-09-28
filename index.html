@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GIN — My Journey</title>
+<title>Alif — My Journey</title>
 
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
@@ -145,7 +145,6 @@
   }
   .brand-mark svg { width: 19px; height: 19px; stroke-width: 2.2; }
 
-  /* Logo image di dalam brand-mark */
   .brand-mark img {
     width: 100%;
     height: 100%;
@@ -730,10 +729,10 @@
   <aside class="sidebar">
     <div class="brand">
       <div class="brand-mark">
-        <img src="logo.png" alt="Logo GIN">
+        <img src="logo.png" alt="Logo Alif">
       </div>
       <div>
-        <div class="brand-name">GIN</div>
+        <div class="brand-name">ALIF</div>
         <div class="brand-sub">MY JOURNEY</div>
       </div>
     </div>
@@ -1565,9 +1564,6 @@ function buildChart() {
     // ===== BAR: floating bar (batang kumulatif bersambung) =====
     labels = titles;
 
-    // Chart.js floating bar menerima data [min, max].
-    // Kita kirim [start, end] agar batang benar-benar berangkat dari
-    // nilai akhir momen sebelumnya, bukan dari sumbu 0.
     const barData = barEnd.map((end, i) => [
       Math.min(barStart[i], end),
       Math.max(barStart[i], end)
